@@ -54,7 +54,7 @@ body {
 
 /* Hero */
 .hero {
-  background: linear-gradient(180deg, rgba(92,169,251,0.08), transparent 40%), url('/img/medibot-hero.jpg') center/cover no-repeat;
+  background: linear-gradient(180deg, rgba(92,169,251,0.08), transparent 40%), url('/img/medibot-hero.png') center/cover no-repeat;
   min-height: 54vh;
   display: grid; place-items: center; text-align: center;
   padding: 32px 16px;
