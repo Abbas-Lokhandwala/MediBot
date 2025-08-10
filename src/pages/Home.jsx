@@ -1,92 +1,34 @@
-import React, { useMemo, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState } from "react";
 import SymptomsPicker from "../components/SymptomsPicker";
-import { useSymptomsStore } from "../state/useSymptomsStore";
-import { runDiagnosis } from "../api/model";
+
+const SYMPTOMS = [
+  "Fever","Cough","Headache","Sore Throat","Runny Nose","Fatigue","Nausea",
+  "Vomiting","Diarrhea","Shortness of Breath","Chest Pain","Body Aches",
+  "Loss of Smell","Loss of Taste","Dizziness","Rash"
+];
 
 export default function Home() {
-  const navigate = useNavigate();
-  const { selected } = useSymptomsStore();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
 
-  const payload = useMemo(() => ({
-    items: Object.entries(selected).map(([name, v]) => ({
-      name,
-      severity: v.severity,
-    })),
-  }), [selected]);
-
-  async function handleSubmit() {
-    setError("");
-    setLoading(true);
-    try {
-      const data = await runDiagnosis(payload);
-      sessionStorage.setItem(
-        "medibot_result",
-        JSON.stringify({ input: payload, output: data })
-      );
-      navigate("/results");
-    } catch (e) {
-      setError("Something went wrong. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // selectedSymptoms is an ordered array, e.g. ["Fever","Cough","Rash"]
+    console.log(selectedSymptoms);
+    // route to results or call your model here
+  };
 
   return (
-    <>
-      <div className="hero">
-        <div className="card">
-          <h1>Describe how you feel. MEDIBOT does the rest.</h1>
-          <p>
-            Pick your symptoms and set severity (1–5). We'll generate a quick
-            triage summary and possible causes.{" "}
-            <Link to="/metrics">See model metrics</Link>.
-          </p>
-          <div className="cta">
-            <a href="#symptoms" className="btn primary">
-              Start Selecting
-            </a>
-            <Link className="btn" to="/metrics">
-              Model Accuracy
-            </Link>
-          </div>
-        </div>
+    <form onSubmit={handleSubmit} className="symptom-form">
+      <h2>Select your symptoms</h2>
+      <SymptomsPicker
+        options={SYMPTOMS}
+        value={selectedSymptoms}
+        onChange={setSelectedSymptoms}
+      />
+      <div className="form-row">
+        <div className="selected-count">Selected: {selectedSymptoms.length}</div>
+        <button className="primary-btn">Continue</button>
       </div>
-
-      <div id="symptoms" className="section">
-        <h2>Symptoms</h2>
-        <SymptomsPicker />
-        {error && (
-          <div style={{ color: "#ff9b9b", marginTop: 10 }}>{error}</div>
-        )}
-        <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-          <button
-            className="btn primary"
-            disabled={loading || payload.items.length === 0}
-            onClick={handleSubmit}
-          >
-            {loading ? "Analyzing..." : "Submit for Analysis"}
-          </button>
-          <span style={{ color: "var(--muted)", alignSelf: "center" }}>
-            {payload.items.length === 0
-              ? "Select at least one symptom"
-              : `${payload.items.length} selected`}
-          </span>
-        </div>
-      </div>
-
-      <div className="section">
-        <h2>Model Accuracy</h2>
-        <div className="panel">
-          <p style={{ margin: 0 }}>
-            We publish precision/recall, calibration, and AUROC for major symptom
-            clusters. View details and caveats on the{" "}
-            <Link to="/metrics">Metrics page</Link>.
-          </p>
-        </div>
-      </div>
-    </>
+    </form>
   );
 }

@@ -184,5 +184,81 @@ body {
   padding: 10px 12px;
 }
 
+/* layout */
+.chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+}
+
+/* chip */
+.chip {
+  position: relative;
+  border: 1px solid #2f3744;
+  background: #1e2430;
+  color: #e6eefc;
+  padding: 10px 14px 10px 38px; /* room for badge */
+  border-radius: 9999px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .05s ease, border-color .15s ease, background .15s ease;
+  outline: none;
+}
+
+.chip:hover { border-color: #5ca9fb; }
+.chip:active { transform: translateY(1px); }
+.chip:focus-visible { box-shadow: 0 0 0 3px rgba(92,169,251,.35); }
+
+.chip--selected {
+  background: #273043;
+  border-color: #5ca9fb;
+}
+
+/* badge with selection number */
+.chip-badge {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #5ca9fb;
+  color: #0b1220;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* label */
+.chip-label {
+  white-space: nowrap;
+}
+
+/* small form bits */
+.symptom-form h2 { margin: 0 0 12px; }
+.form-row {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.selected-count { opacity: .75; }
+.primary-btn {
+  margin-left: auto;
+  background: #5ca9fb;
+  color: #0b1220;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.primary-btn:hover { filter: brightness(1.05); }
+
+
 /* Links */
 a { color: var(--brand); }
