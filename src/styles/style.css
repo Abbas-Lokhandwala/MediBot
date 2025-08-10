@@ -56,7 +56,7 @@ a{ color:var(--brand); }
 }
 .primary-btn:disabled{ opacity:.5; cursor:not-allowed; }
 
-/* ===== Symptoms (distinct, no overflow) ===== */
+/* ===== Symptoms (distinct panel) ===== */
 .symptoms-section{
   background:#0e1421;
   box-shadow: inset 0 1px 0 #1d2940, inset 0 -1px 0 #1d2940;
@@ -69,17 +69,17 @@ a{ color:var(--brand); }
   border-radius:16px;
   padding:20px;
 }
-
-/* header */
 .section-panel h2{ margin:0 0 6px; font-size:28px; }
 .muted{ color:#8fa0bf; }
 
-/* chips wrap (fix overflow) */
+/* Chips — grid so the LAST ROW auto‑centers evenly */
 .chips-wrap{
-  display:flex;
-  flex-wrap:wrap;           /* <-- wraps to next line */
-  gap:14px 16px;
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap:16px;                     /* spacing between chips */
   margin:16px 0 12px;
+  align-items:center;
+  justify-items:center;         /* centers items within their grid tracks (last line looks balanced) */
 }
 
 /* chip */
@@ -87,9 +87,9 @@ a{ color:var(--brand); }
   position:relative;
   display:flex; align-items:center; justify-content:center;
   gap:8px;
-  min-width:160px;          /* keeps them chunky; combined with max-width container gives ~2 rows */
+  width:100%; max-width:220px;           /* prevents giant chips in wide tracks */
   border:1px solid #2f3744; background:#1e2430; color:#e6eefc;
-  padding:10px 16px; border-radius:9999px; font-size:14px; line-height:1;
+  padding:12px 18px; border-radius:9999px; font-size:14px; line-height:1;
   cursor:pointer; transition:transform .05s, border-color .15s, background .15s, padding .15s, justify-content .15s;
   outline:none;
 }
@@ -99,11 +99,11 @@ a{ color:var(--brand); }
 
 .chip--selected{
   background:#273043; border-color:#5ca9fb;
-  padding-left:40px;                    /* room for badge */
-  justify-content:flex-start;           /* label nudges right */
+  padding-left:44px;                    /* room for badge */
+  justify-content:flex-start;           /* label nudges right when selected */
 }
 .chip-badge{
-  position:absolute; left:10px; top:50%; transform:translateY(-50%);
+  position:absolute; left:12px; top:50%; transform:translateY(-50%);
   display:inline-flex; align-items:center; justify-content:center;
   width:22px; height:22px; border-radius:50%;
   background:#5ca9fb; color:#0b1220; font-weight:700; font-size:12px;
@@ -147,5 +147,5 @@ a{ color:var(--brand); }
   .nav-inner{ padding:12px 18px; }
   .nav-links{ gap:14px; }
   .section-inner{ padding:0 16px; }
-  .chip{ min-width:140px; }
+  .chips-wrap{ grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
 }
