@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import heroImg from "../img/medibot-hero.png";
+import { Link } from "react-router-dom";
 
 const SYMPTOMS = [
   "Fever","Cough","Headache","Sore Throat","Runny Nose","Fatigue","Nausea",
@@ -8,9 +8,67 @@ const SYMPTOMS = [
   "Loss of Smell","Loss of Taste","Dizziness","Rash"
 ];
 
+// keep this as a local component (no export!)
+const AnalyticsOverview = () => {
+  return (
+    <section id="analysis" className="analytics-hero">
+      <div className="analytics-wrap">
+        <h2 className="analytics-title">How MediBot Analytics Works</h2>
+
+        <p className="analytics-blurb">
+          We don’t guess. We score your symptom pattern against vetted medical sources and our
+          in‑house model, then surface confidence and safe next‑step guidance. Below is the quick
+          version—dive into the full breakdown if you’re nerdy like us.
+        </p>
+
+        <div className="analytics-steps">
+          <div className="step-card">
+            <h3>1. Signal Intake</h3>
+            <p>We encode your selected symptoms + severity into a structured vector (“signal”).</p>
+          </div>
+          <div className="step-card">
+            <h3>2. Model Inference</h3>
+            <p>Model estimates likely categories and ranks differentials with calibrated confidence.</p>
+          </div>
+          <div className="step-card">
+            <h3>3. Safety Layer</h3>
+            <p>Hard rules catch red‑flags (e.g., chest pain, SOB) → urgent‑care prompts first.</p>
+          </div>
+        </div>
+
+        <div className="analytics-metrics">
+          <div className="metric">
+            <span className="metric-key">Internal Test Accuracy</span>
+            <span className="metric-val">~82–88%</span>
+          </div>
+          <div className="metric">
+            <span className="metric-key">Top‑3 Recall</span>
+            <span className="metric-val">~93%</span>
+          </div>
+          <div className="metric">
+            <span className="metric-key">Avg. Confidence</span>
+            <span className="metric-val">0.67</span>
+          </div>
+          <div className="metric">
+            <span className="metric-key">Safety Overrides</span>
+            <span className="metric-val">On</span>
+          </div>
+        </div>
+
+        <div className="analytics-cta">
+          {/* send to your existing Metrics page */}
+          <Link to="/metrics" className="btn-analytics">
+            View Full Analytics
+          </Link>
+          <span className="cta-note">This is educational, not medical advice.</span>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 export default function Home() {
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
-  const navigate = useNavigate();
 
   const toggle = (sym) => {
     const i = selectedSymptoms.indexOf(sym);
@@ -39,6 +97,7 @@ export default function Home() {
     e.preventDefault();
     if (!selectedSymptoms.length) return;
     sessionStorage.setItem("selectedSymptoms", JSON.stringify(selectedSymptoms));
+    // smooth scroll to analytics teaser
     document.getElementById("analysis")?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -71,7 +130,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== Symptoms (separate, distinct panel; chips wrap) ===== */}
+      {/* ===== Symptoms ===== */}
       <section id="symptoms" className="symptoms-section">
         <div className="section-inner section-panel">
           <h2>Select your symptoms</h2>
@@ -92,35 +151,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== Analysis ===== */}
-      <section id="analysis" className="analysis-block">
-        <h2>Preliminary Analytics</h2>
-        <div className="analysis-card">
-          <div className="analysis-col">
-            <h3>Likely Categories</h3>
-            <ul className="bullets">
-              <li>Respiratory</li>
-              <li>Viral Infection</li>
-              <li>Allergy</li>
-            </ul>
-          </div>
-          <div className="analysis-col">
-            <h3>Next Steps</h3>
-            <ul className="bullets">
-              <li>Track temperature and hydration</li>
-              <li>Rest and appropriate OTC relief</li>
-              <li>Urgent care if severe chest pain / SOB</li>
-            </ul>
-          </div>
-          <div className="analysis-col">
-            <h3>Confidence</h3>
-            <div className="confidence-bar">
-              <div className="fill" style={{ width: "72%" }} />
-            </div>
-            <small className="muted">This is not medical advice.</small>
-          </div>
-        </div>
-      </section>
+      {/* ===== Analytics teaser ===== */}
+      <AnalyticsOverview />
 
       {/* ===== Disclaimer ===== */}
       <section className="disclaimer">
