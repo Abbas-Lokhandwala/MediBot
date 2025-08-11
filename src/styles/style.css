@@ -131,15 +131,55 @@ a{ color:var(--brand); }
 .confidence-bar .fill{ height:100%; background:#5ca9fb; }
 
 /* ===== Disclaimer & Footer ===== */
-.disclaimer{ padding:32px 20px; color:#cdd8f3; background:#0c111b; }
-.disclaimer h3{ margin:0 0 8px; }
-.footer{
-  display:flex; justify-content:space-between; align-items:center;
-  padding:18px 20px; color:#9fb2d8; border-top:1px solid #1f2a3a;
-  max-width:1200px; margin:0 auto;
+/* Reduce gap above disclaimer */
+/* Disclaimer box styling */
+.disclaimer {
+  background: rgba(255, 193, 7, 0.08); /* subtle yellow tint */
+  border-left: 4px solid #ffc107; /* yellow accent bar */
+  padding: 20px 24px;
+  margin-top: 20px;
+  border-radius: 10px;
 }
-.footer a{ color:#5ca9fb; text-decoration:none; }
-.footer a:hover{ text-decoration:underline; }
+
+.disclaimer h3 {
+  color: #ffc107; /* bright yellow heading */
+  font-weight: 800;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* space between emoji and text */
+}
+
+.disclaimer p {
+  color: #e8f0ff;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-left: 4px; /* small left gap from border */
+}
+
+/* Footer centered inline */
+.footer {
+  display: flex;
+  justify-content: center; /* center horizontally */
+  align-items: center; /* vertical align */
+  gap: 16px; /* space between the two parts */
+  font-size: 12px;
+  color: var(--muted);
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer a {
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+
 
 /* ===== Responsive ===== */
 @media (max-width: 920px){

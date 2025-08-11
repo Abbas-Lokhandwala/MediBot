@@ -8,7 +8,7 @@ const SYMPTOMS = [
   "Loss of Smell","Loss of Taste","Dizziness","Rash"
 ];
 
-// keep this as a local component (no export!)
+// Local component (no export)
 const AnalyticsOverview = () => {
   return (
     <section id="analysis" className="analytics-hero">
@@ -16,23 +16,36 @@ const AnalyticsOverview = () => {
         <h2 className="analytics-title">How MediBot Analytics Works</h2>
 
         <p className="analytics-blurb">
-          We don’t guess. We score your symptom pattern against vetted medical sources and our
-          in‑house model, then surface confidence and safe next‑step guidance. Below is the quick
-          version—dive into the full breakdown if you’re nerdy like us.
+          MediBot uses a multi-stage analysis pipeline to transform your reported symptoms into
+          actionable insights. Our AI combines structured medical datasets, clinical guidelines, and
+          probabilistic inference to suggest possible categories, rank likely causes, and flag urgent
+          warning signs. Every step is designed for transparency, accuracy, and safety.
         </p>
 
         <div className="analytics-steps">
           <div className="step-card">
             <h3>1. Signal Intake</h3>
-            <p>We encode your selected symptoms + severity into a structured vector (“signal”).</p>
+            <p>
+              We collect the symptoms you’ve selected along with their severity and order and
+              convert them into a structured “signal” our model can interpret. This captures not just
+              what you feel, but how intensely and in what sequence.
+            </p>
           </div>
           <div className="step-card">
             <h3>2. Model Inference</h3>
-            <p>Model estimates likely categories and ranks differentials with calibrated confidence.</p>
+            <p>
+              Using this signal, MediBot applies a fine-tuned medical classification model trained on
+              verified health literature, anonymized patient data, and diagnostic guidelines. It estimates
+              probabilities for multiple possible conditions, ranks them, and assigns a confidence score.
+            </p>
           </div>
           <div className="step-card">
             <h3>3. Safety Layer</h3>
-            <p>Hard rules catch red‑flags (e.g., chest pain, SOB) → urgent‑care prompts first.</p>
+            <p>
+              Before results are shown, a safety layer checks for red-flag symptoms (e.g., severe chest
+              pain, sudden neurological changes, shortness of breath). If detected, urgent-care prompts
+              override all other outputs.
+            </p>
           </div>
         </div>
 
@@ -42,7 +55,7 @@ const AnalyticsOverview = () => {
             <span className="metric-val">~82–88%</span>
           </div>
           <div className="metric">
-            <span className="metric-key">Top‑3 Recall</span>
+            <span className="metric-key">Top-3 Recall</span>
             <span className="metric-val">~93%</span>
           </div>
           <div className="metric">
@@ -56,11 +69,12 @@ const AnalyticsOverview = () => {
         </div>
 
         <div className="analytics-cta">
-          {/* send to your existing Metrics page */}
           <Link to="/metrics" className="btn-analytics">
             View Full Analytics
           </Link>
-          <span className="cta-note">This is educational, not medical advice.</span>
+          <span className="cta-note">
+            This tool is for educational purposes only and is not a substitute for professional medical advice.
+          </span>
         </div>
       </div>
     </section>
@@ -97,7 +111,6 @@ export default function Home() {
     e.preventDefault();
     if (!selectedSymptoms.length) return;
     sessionStorage.setItem("selectedSymptoms", JSON.stringify(selectedSymptoms));
-    // smooth scroll to analytics teaser
     document.getElementById("analysis")?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -156,11 +169,14 @@ export default function Home() {
 
       {/* ===== Disclaimer ===== */}
       <section className="disclaimer">
-        <h3>Important</h3>
+        <h3>⚠️ Important Safety Notice</h3>
         <p>
-          MEDIBOT is an educational tool and not a substitute for professional medical advice,
-          diagnosis, or treatment. Always seek a qualified health provider with questions about a condition.
-          Call emergency services for severe or life‑threatening symptoms.
+          MediBot is an <strong>educational tool only</strong> and should <strong>not</strong> be used as a
+          substitute for professional medical advice, diagnosis, or treatment.
+          Always seek the guidance of a qualified healthcare provider for any questions about your
+          health or a medical condition.
+          🚨 If you are experiencing severe, sudden, or life-threatening symptoms, call your local
+          emergency services immediately.
         </p>
       </section>
 
