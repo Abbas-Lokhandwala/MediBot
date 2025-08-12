@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/MediBot/assets/logo-DqitH3g3.png" />
+    <!-- Put the icon in /public and reference it from root so Vite adds your base -->
+    <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MediBot</title>
     <script type="module" crossorigin src="/MediBot/assets/index-PFjw4PHD.js"></script>
@@ -10,5 +11,6 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Leave this exactly as-is; Vite will rewrite it to /MediBot/assets/... -->
   </body>
 </html>
