@@ -1,32 +1,32 @@
-import React from "react";
+// components/Navbar.jsx
 import { Link, useLocation } from "react-router-dom";
-import logo from "../img/logo.png";
 
 export default function Navbar() {
-  const { pathname } = useLocation();
-  const isSpecial =
-    pathname === "/results" ||
-    pathname.startsWith("/results/") ||
-    pathname === "/metrics" ||
-    pathname.startsWith("/metrics/");
+  const location = useLocation();
+  const logoUrl = `${import.meta.env.BASE_URL}logo.png`;
+
+  const showBackButton =
+    location.pathname !== "/" && location.pathname !== "/MediBot/"; // for GH Pages
 
   return (
-    <nav className="navbar">
-      <div className="navbar-left">
-        <img src={logo} alt="MediBot Logo" className="navbar-logo" />
-        <span className="navbar-title">MEDIBOT</span>
-      </div>
+    <header className="nav flex items-center gap-4">
+      <Link to="/" className="flex items-center gap-2">
+        <img src={logoUrl} alt="MediBot" width={32} height={32} />
+        <span className="font-bold">MEDIBOT</span>
+      </Link>
 
-      <div className="navbar-right">
-        {isSpecial ? (
-          <Link to="/" className="nav-link btn-like">← Back to Home</Link>
+      <nav className="ml-auto flex gap-6">
+        {showBackButton ? (
+          <Link to="/" className="btn">
+            ⬅ Back to Home
+          </Link>
         ) : (
           <>
-            <a href="#symptoms" className="nav-link">Symptoms</a>
-            <a href="#analysis" className="nav-link">Analytics</a>
+            <Link to="/symptoms" className="btn">Symptoms</Link>
+            <Link to="/analytics" className="btn">Analytics</Link>
           </>
         )}
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }
