@@ -60,6 +60,11 @@ a{ color:var(--brand); }
   color: var(--accent);
 }
 
+/* Make all links inside the navbar inherit your theme (no blue/underline) */
+.navbar a,
+.navbar a:visited { color: var(--ink); text-decoration: none; }
+.navbar a:hover { color: var(--accent); }
+
 
 /* back button look only when applied */
 .btn-like {

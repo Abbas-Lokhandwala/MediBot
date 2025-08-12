@@ -2,28 +2,27 @@
 import { Link, useLocation } from "react-router-dom";
 
 export default function Navbar() {
-  const location = useLocation();
-  const logoUrl = `${import.meta.env.BASE_URL}logo.png`;
+  const { pathname } = useLocation();
+  const logoUrl = `${import.meta.env.BASE_URL}logo.png`; // put logo.png in /public
 
-  const showBackButton =
-    location.pathname !== "/" && location.pathname !== "/MediBot/"; // for GH Pages
+  const showBack = pathname !== "/"; // HashRouter will still set "/" on home
 
   return (
-    <header className="nav flex items-center gap-4">
-      <Link to="/" className="flex items-center gap-2">
-        <img src={logoUrl} alt="MediBot" width={32} height={32} />
-        <span className="font-bold">MEDIBOT</span>
-      </Link>
+    <header className="navbar">
+      <div className="navbar-left">
+        <Link to="/" className="brand">
+          <img src={logoUrl} alt="MediBot" className="navbar-logo" />
+          <span className="navbar-title">MEDIBOT</span>
+        </Link>
+      </div>
 
-      <nav className="ml-auto flex gap-6">
-        {showBackButton ? (
-          <Link to="/" className="btn">
-            ⬅ Back to Home
-          </Link>
+      <nav className="navbar-right">
+        {showBack ? (
+          <Link to="/" className="nav-link btn-like">⬅ Back to Home</Link>
         ) : (
           <>
-            <Link to="/symptoms" className="btn">Symptoms</Link>
-            <Link to="/analytics" className="btn">Analytics</Link>
+            <Link to="/symptoms" className="nav-link">Symptoms</Link>
+            <Link to="/metrics" className="nav-link">Analytics</Link>
           </>
         )}
       </nav>
