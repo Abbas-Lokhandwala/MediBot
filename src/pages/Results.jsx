@@ -1,94 +1,86 @@
-// src/pages/Results.jsx
-import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { loadMedicalData, scoreDiseases } from "../lib/analyze";
 
 export default function Results() {
-  const navigate = useNavigate();
-  const [data, setData] = useState(null);
+  const [selected, setSelected] = useState([]);
+  const [ranked, setRanked] = useState([]);
+  const [meta, setMeta] = useState({ descriptions: {}, precautions: {} });
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem("medibot_result");
-      if (!raw) return;
-      setData(JSON.parse(raw));
-    } catch {}
+    const s = JSON.parse(sessionStorage.getItem("selectedSymptoms") || "[]");
+    setSelected(s);
+
+    (async () => {
+      try {
+        const { diseaseSymptoms, descriptions, precautions } = await loadMedicalData();
+        const scores = scoreDiseases(s, diseaseSymptoms, { orderBoost: 0.15, normalize: true });
+        setRanked(scores.slice(0, 3)); // top-3 results
+        setMeta({ descriptions, precautions });
+      } catch (e) {
+        console.error(e);
+        setErr(e.message || "Failed to load data.");
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  const badgeClass = useMemo(() => {
-    const risk = data?.output?.risk;
-    if (risk === "high") return "badge err";
-    if (risk === "medium") return "badge warn";
-    return "badge ok";
-  }, [data]);
+  if (loading) return <div className="results"><h2>Analyzing…</h2></div>;
+  if (err) return <div className="results"><h2>Couldn’t analyze</h2><p className="muted">{err}</p></div>;
 
-  if (!data) {
-    return (
-      <div className="section">
-        <div className="panel">
-          <p>No results yet. Go back and submit your symptoms.</p>
-          <Link className="btn" to="/">Back to Home</Link>
-        </div>
-      </div>
-    );
-  }
-
-  const { input, output } = data;
+  const totalScore = ranked.reduce((sum, r) => sum + r.score, 0);
 
   return (
-    <div className="section">
-      <h2>Preliminary Triage</h2>
-      <div className="result-card">
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-          <span className={badgeClass}>{output.risk?.toUpperCase() || "LOW"} RISK</span>
-          <span style={{ color: "var(--muted)" }}>
-            This is not medical advice. Consult a professional.
-          </span>
-        </div>
+    <div className="results">
+      {/* Back button */}
+      <div style={{ marginBottom: "20px" }}>
+        <Link to="/" className="back-btn">← Back to Home</Link>
+      </div>
 
-        <p style={{ marginTop: 0 }}>{output.summary}</p>
+      <h2>Preliminary Results</h2>
+      <p className="muted">Selected symptoms: {selected.join(", ") || "—"}</p>
 
-        <h3>Symptoms Submitted</h3>
-        {input.items.length === 0 ? (
-          <p style={{ color: "var(--muted)" }}>None</p>
-        ) : (
-          <div>
-            {input.items.map((s) => (
-              <div className="result-row" key={s.name}>
-                <div style={{ color: "var(--muted)" }}>{s.name}</div>
-                <div>Severity: {s.severity}/5</div>
-              </div>
-            ))}
+      <div className="cards">
+        {ranked.length === 0 && (
+          <div className="card">
+            <div className="card-title">No strong matches</div>
+            <p className="muted">Try adding 1–2 more key symptoms for a better signal.</p>
           </div>
         )}
 
-        <h3>Possible Causes (Differential)</h3>
-        <div>
-          {output.differential?.map((d) => (
-            <div className="result-row" key={d.label}>
-              <div style={{ color: "var(--muted)" }}>{d.label}</div>
-              <div>Confidence: {(d.confidence * 100).toFixed(0)}%</div>
+        {ranked.map((r, i) => {
+          const d = r.disease;
+          const desc = meta.descriptions[d] || "No description available.";
+          const steps = meta.precautions[d] || [];
+          const pct = totalScore > 0 ? (r.score / totalScore) * 100 : 0;
+
+          return (
+            <div className="card" key={d}>
+              <div className="card-head">
+                <div className="rank">{i + 1}</div>
+                <div className="card-title">{d}</div>
+                <div className="score">{pct.toFixed(0)}%</div>
+              </div>
+              <p className="desc">{desc}</p>
+              {steps.length > 0 && (
+                <>
+                  <div className="subhead">Suggested Precautions</div>
+                  <ul className="bullets">
+                    {steps.map((s, idx) => <li key={idx}>{s}</li>)}
+                  </ul>
+                </>
+              )}
             </div>
-          ))}
-        </div>
-
-        <h3>Recommendations</h3>
-        <ul>
-          {output.recommendations?.map((r, i) => <li key={i}>{r}</li>)}
-        </ul>
-
-        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-          <Link className="btn" to="/">Edit Symptoms</Link>
-          <button
-            className="btn"
-            onClick={() => {
-              sessionStorage.removeItem("medibot_result");
-              navigate("/");
-            }}
-          >
-            New Analysis
-          </button>
-        </div>
+          );
+        })}
       </div>
+
+      <p className="muted" style={{ marginTop: 16 }}>
+        These percentages are relative to the top results shown and are for educational use only.
+      </p>
     </div>
   );
 }
