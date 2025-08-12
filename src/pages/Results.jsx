@@ -35,10 +35,6 @@ export default function Results() {
 
   return (
     <div className="results">
-      {/* Back button */}
-      <div style={{ marginBottom: "20px" }}>
-        <Link to="/" className="back-btn">← Back to Home</Link>
-      </div>
 
       <h2>Preliminary Results</h2>
       <p className="muted">Selected symptoms: {selected.join(", ") || "—"}</p>

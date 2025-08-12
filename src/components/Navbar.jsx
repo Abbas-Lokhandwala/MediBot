@@ -1,41 +1,32 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../img/logo.png";
 
 export default function Navbar() {
-  const navigate = useNavigate();
-
-  const scrollToTop = () => {
-    navigate("/");
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 50);
-  };
-
-  const scrollTo = (id) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
+  const { pathname } = useLocation();
+  const isSpecial =
+    pathname === "/results" ||
+    pathname.startsWith("/results/") ||
+    pathname === "/metrics" ||
+    pathname.startsWith("/metrics/");
 
   return (
-    <header className="nav">
-      <div className="nav-inner">
-        {/* LEFT: Logo + title */}
-        <div className="nav-left" onClick={scrollToTop} role="button" tabIndex={0}>
-          <img src={logo} alt="MEDIBOT" className="nav-logo" />
-          <span className="nav-title">MEDIBOT</span>
-        </div>
-
-        {/* RIGHT: Links */}
-        <nav className="nav-links">
-          <button type="button" className="nav-link" onClick={() => scrollTo("symptoms")}>
-            Symptoms
-          </button>
-          <button type="button" className="nav-link" onClick={() => scrollTo("analysis")}>
-            Analytics
-          </button>
-        </nav>
+    <nav className="navbar">
+      <div className="navbar-left">
+        <img src={logo} alt="MediBot Logo" className="navbar-logo" />
+        <span className="navbar-title">MEDIBOT</span>
       </div>
-    </header>
+
+      <div className="navbar-right">
+        {isSpecial ? (
+          <Link to="/" className="nav-link btn-like">← Back to Home</Link>
+        ) : (
+          <>
+            <a href="#symptoms" className="nav-link">Symptoms</a>
+            <a href="#analysis" className="nav-link">Analytics</a>
+          </>
+        )}
+      </div>
+    </nav>
   );
 }
