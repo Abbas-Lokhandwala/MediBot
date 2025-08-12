@@ -65,6 +65,8 @@ a{ color:var(--brand); }
 .navbar a:visited { color: var(--ink); text-decoration: none; }
 .navbar a:hover { color: var(--accent); }
 
+.navbar .nav-link { cursor: pointer; } /* so the buttons look/feel clickable */
+
 
 /* back button look only when applied */
 .btn-like {
