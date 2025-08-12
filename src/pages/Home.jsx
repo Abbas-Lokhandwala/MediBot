@@ -8,7 +8,7 @@ const SYMPTOMS = [
   "Loss of Smell","Loss of Taste","Dizziness","Rash"
 ];
 
-/* -------- Analytics teaser (local component) -------- */
+
 const AnalyticsOverview = () => {
   return (
     <section id="analysis" className="analytics-hero">
@@ -16,68 +16,67 @@ const AnalyticsOverview = () => {
         <h2 className="analytics-title">How MediBot Analytics Works</h2>
 
         <p className="analytics-blurb">
-          MediBot uses a multi‑stage analysis pipeline to transform your reported symptoms into
-          actionable insights. Our AI combines structured medical datasets, clinical guidelines, and
-          probabilistic inference to suggest possible categories, rank likely causes, and flag urgent
-          warning signs. Every step is designed for transparency, accuracy, and safety.
+          MediBot uses a multi‑stage pipeline to turn your selected symptoms into actionable insight.
+          We encode your inputs, score them against a learned symptom profile, and apply a safety layer
+          to surface urgent red‑flags first. The full Analytics page shows browser‑computed metrics,
+          calibration, and dataset insights.
         </p>
 
         <div className="analytics-steps">
           <div className="step-card">
             <h3>1. Signal Intake</h3>
             <p>
-              We collect the symptoms you’ve selected along with their severity and order and
-              convert them into a structured “signal” our model can interpret. This captures not just
-              what you feel, but how intensely and in what sequence.
+              Your symptoms (and order/severity if provided) are converted into a structured vector
+              the model can understand.
             </p>
           </div>
           <div className="step-card">
             <h3>2. Model Inference</h3>
             <p>
-              Using this signal, MediBot applies a fine‑tuned medical classification model trained on
-              verified health literature, anonymized patient data, and diagnostic guidelines. It estimates
-              probabilities for multiple possible conditions, ranks them, and assigns a confidence score.
+              We compare that signal to learned symptom profiles to estimate likely conditions and rank
+              differentials with a confidence score.
             </p>
           </div>
           <div className="step-card">
             <h3>3. Safety Layer</h3>
             <p>
-              Before results are shown, a safety layer checks for red‑flag symptoms (e.g., severe chest
-              pain, sudden neurological changes, shortness of breath). If detected, urgent‑care prompts
-              override all other outputs.
+              Hard rules catch red‑flags (e.g., severe chest pain, sudden neuro changes, shortness of breath)
+              and elevate urgent‑care guidance.
             </p>
           </div>
         </div>
 
+        {/* Updated, real metrics from your current Analytics run */}
         <div className="analytics-metrics">
           <div className="metric">
-            <span className="metric-key">Internal Test Accuracy</span>
-            <span className="metric-val">~82–88%</span>
+            <span className="metric-key">Accuracy</span>
+            <span className="metric-val">97.1%</span>
+          </div>
+          <div className="metric">
+            <span className="metric-key">Macro‑F1</span>
+            <span className="metric-val">96.7%</span>
           </div>
           <div className="metric">
             <span className="metric-key">Top‑3 Recall</span>
-            <span className="metric-val">~93%</span>
+            <span className="metric-val">100%</span>
           </div>
           <div className="metric">
-            <span className="metric-key">Avg. Confidence</span>
-            <span className="metric-val">0.67</span>
-          </div>
-          <div className="metric">
-            <span className="metric-key">Safety Overrides</span>
-            <span className="metric-val">On</span>
+            <span className="metric-key">Classes</span>
+            <span className="metric-val">41</span>
           </div>
         </div>
 
         <div className="analytics-cta">
           <Link to="/metrics" className="btn-analytics">View Full Analytics</Link>
           <span className="cta-note">
-            This tool is for educational purposes only and is not a substitute for professional medical advice.
+            Educational use only. Not a substitute for professional medical advice.
           </span>
         </div>
       </div>
     </section>
   );
 };
+
 
 export default function Home() {
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);

@@ -5,29 +5,50 @@ import {
   trainClassProfiles, evaluate
 } from "../lib/stats";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend
+  ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
+  PieChart, Pie, Cell, Legend,
+  LineChart, Line
 } from "recharts";
 
 export default function Metrics() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [summary, setSummary] = useState(null);
-  const [perClass, setPerClass] = useState([]);
-  const [cmFull, setCmFull] = useState([]);     // full confusion matrix
-  const [classes, setClasses] = useState([]);   // all class labels
+  const [topSymptoms, setTopSymptoms] = useState([]);
+  const [classDist, setClassDist] = useState([]);
 
   useEffect(() => {
     try {
-      // 1) Parse + build
+      // Parse CSV & build matrices
       const { rows } = parseCsvRaw(datasetCsv);
       const mats = buildMatrices(rows);
+
+      // Train simple overlap baseline & evaluate (for summary + calibration only)
       const split = splitTrainTest(mats.X, mats.y, mats.classes, mats.classIndex, 0.2, 42);
-
-      // 2) Train simple overlap baseline
       const { profiles } = trainClassProfiles(split.X_train, split.y_train, mats.classes);
-
-      // 3) Evaluate
       const ev = evaluate(split.X_test, split.y_test, profiles, mats.classes, mats.classIndex);
+
+      // Class distribution (for pie)
+      const classCounts = new Map(mats.classes.map(c => [c, 0]));
+      mats.y.forEach(lbl => classCounts.set(lbl, (classCounts.get(lbl) || 0) + 1));
+      const classDistData = [...classCounts.entries()]
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value);
+
+      // Symptom frequency (for bar)
+      const symCounts = new Map();
+      mats.symptomCols.forEach(() => {});
+      rows.forEach(r => {
+        mats.symptomCols.forEach(c => {
+          const s = r[c];
+          if (s && s !== "nan") symCounts.set(s, (symCounts.get(s) || 0) + 1);
+        });
+      });
+      const topSym = [...symCounts.entries()]
+        .map(([symptom, count]) => ({ symptom, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20);
 
       setSummary({
         accuracy: ev.accuracy,
@@ -39,10 +60,8 @@ export default function Metrics() {
         nTest: split.X_test.length,
         calib: ev.calib
       });
-      setPerClass(ev.perClass);    // include support for later slicing
-      setCmFull(ev.cm);
-      setClasses(mats.classes);
-
+      setClassDist(classDistData);
+      setTopSymptoms(topSym);
       setLoading(false);
     } catch (e) {
       console.error(e);
@@ -54,7 +73,6 @@ export default function Metrics() {
   if (loading) return <div className="analytics-page"><h1>Crunching analytics…</h1></div>;
   if (err) return <div className="analytics-page"><h1>Analytics</h1><p className="muted">{err}</p></div>;
 
-  // Cards → turn into tidy table
   const stats = [
     ["Accuracy", `${(summary.accuracy * 100).toFixed(1)}%`],
     ["Macro F1", `${(summary.f1Macro * 100).toFixed(1)}%`],
@@ -64,41 +82,21 @@ export default function Metrics() {
     ["Train / Test", `${summary.nTrain} / ${summary.nTest}`],
   ];
 
-  // Per‑class F1 (top N by support)
-  const perClassTop = [...perClass]
-    .sort((a, b) => b.support - a.support)
-    .slice(0, 15)
-    .map(r => ({ ...r, f1p: +(r.f1 * 100).toFixed(1) }));
-
-  // Confusion matrix: top‑10 by support to keep it readable
-  const topN = 10;
-  const topLabels = [...perClass]
-    .sort((a, b) => b.support - a.support)
-    .slice(0, topN)
-    .map(r => r.class);
-
-  const topIdx = topLabels.map(l => classes.indexOf(l));
-  const cmTop = topIdx.map(i =>
-    topIdx.map(j => cmFull[i][j])
-  );
-  const cmTopNorm = cmTop.map(row => {
-    const s = row.reduce((a, b) => a + b, 0) || 1;
-    return row.map(v => v / s);
-  });
-
-  // helper to map 0..1 → rgba blue
-  const heat = (v) => `rgba(92,169,251, ${Math.min(0.85, v + 0.08)})`;
+  const COLORS = [
+    "#5CA9FB", "#69F0AE", "#FFCA28", "#FF8A65", "#BA68C8",
+    "#4DB6AC", "#AED581", "#90CAF9", "#F48FB1", "#FFD54F",
+  ];
 
   return (
     <div className="analytics-page">
       <h1>Model Analytics</h1>
       <p className="muted">
-        Below you’ll find a transparent look at how our baseline model performs on your dataset. We compute
-        everything in‑browser: split the data, build a simple symptom‑overlap classifier, and report standard
-        metrics. This gives you a grounded starting point before swapping in a stronger model (e.g., TF.js softmax or a calibrated multi‑class LR).
+        We compute these analytics directly in your browser from <code>dataset.csv</code>, using a transparent
+        overlap‑based baseline. Below: a readable summary table, calibration (confidence vs. reality), and two
+        dataset insights class distribution and the most common symptoms.
       </p>
 
-      {/* Stats table */}
+      {/* Summary table */}
       <section className="stat-table-wrap">
         <table className="stat-table">
           <tbody>
@@ -110,30 +108,18 @@ export default function Metrics() {
             ))}
           </tbody>
         </table>
-      </section>
-
-      {/* Per‑class F1 */}
-      <section className="chart-section">
-        <h2>Per‑Class F1 (Top 15 by support)</h2>
-        <p className="muted">F1 balances precision and recall. Higher is better. Hover for exact values.</p>
-        <div style={{ width: "100%", height: 380 }}>
-          <ResponsiveContainer>
-            <BarChart data={perClassTop} layout="vertical" margin={{ left: 120, right: 16, top: 8, bottom: 8 }}>
-              <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-              <YAxis type="category" dataKey="class" width={260} />
-              <Tooltip formatter={(v) => `${v}%`} labelStyle={{ color: "var(--ink)" }} />
-              <Bar dataKey="f1p" fill="#5CA9FB" radius={[4,4,4,4]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <p className="muted" style={{ marginTop: 8 }}>
+          <strong>Accuracy</strong> is overall correctness; <strong>Macro‑F1</strong> balances precision and recall across classes;
+          <strong> Top‑3 Recall</strong> checks if the true diagnosis shows up anywhere in the model’s top three, a useful UX proxy.
+        </p>
       </section>
 
       {/* Calibration */}
       <section className="chart-section">
         <h2>Calibration</h2>
         <p className="muted">
-          Calibration compares the model’s confidence to how often it’s actually correct. A perfectly
-          calibrated model follows the diagonal (confidence ≈ accuracy).
+          A well‑calibrated model’s confidence should match its actual accuracy (points near the diagonal).
+          Over‑confident models plot above the diagonal; under‑confident below.
         </p>
         <div style={{ width: "100%", height: 320 }}>
           <ResponsiveContainer>
@@ -150,56 +136,84 @@ export default function Metrics() {
         </div>
       </section>
 
-      {/* Confusion Matrix (Top‑10 by support) */}
+      {/* Class distribution */}
       <section className="chart-section">
-        <h2>Confusion Matrix (Top 10 by support)</h2>
+        <h2>Dataset Distribution (Diagnoses)</h2>
         <p className="muted">
-          Each row is a true diagnosis; columns are predicted. Cells are row‑normalized (percent of that class).
-          A strong diagonal near 100% means the classifier rarely confuses these diagnoses on this dataset.
-          If you see 100% everywhere on the diagonal, it usually means the dataset is **highly separable**
-          (many diseases have unique symptom sets) — not that the model is “magic”. That’s normal for toy
-          symptom→disease datasets.
+          How frequently each diagnosis appears. If a few classes dominate, a model can look strong while over‑fitting
+          to those common conditions. Use balanced splits or weighting when you move to a stronger model.
         </p>
-
-        <div style={{ overflowX: "auto", borderRadius: 12, border: "1px solid var(--line)" }}>
-          <table style={{ borderCollapse: "collapse", width: "100%" }}>
-            <thead>
-              <tr>
-                <th style={{ padding: "6px 8px", textAlign: "left" }}>True \ Pred</th>
-                {topLabels.map(l => (
-                  <th key={l} style={{ padding: "6px 8px", textAlign: "left", whiteSpace: "nowrap" }}>{l}</th>
+        <div style={{ width: "100%", height: 380 }}>
+          <ResponsiveContainer>
+            <PieChart>
+              <Pie
+                data={classDist.slice(0, 12)}
+                dataKey="value"
+                nameKey="name"
+                innerRadius={70}
+                outerRadius={130}
+                paddingAngle={1}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {classDist.slice(0, 12).map((entry, i) => (
+                  <Cell key={entry.name} fill={COLORS[i % COLORS.length]} />
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {cmTopNorm.map((row, i) => (
-                <tr key={i}>
-                  <th style={{ padding: "6px 8px", textAlign: "left", whiteSpace: "nowrap" }}>{topLabels[i]}</th>
-                  {row.map((v, j) => (
-                    <td key={j} style={{
-                      padding: 6,
-                      background: heat(v),
-                      color: v > 0.5 ? "#081019" : "var(--ink)"
-                    }}>
-                      {(v*100).toFixed(0)}%
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              </Pie>
+              <Legend />
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        {classDist.length > 12 && (
+          <p className="muted" style={{ marginTop: 8 }}>
+            Showing top 12 classes for readability. The remaining long‑tail classes are less frequent.
+          </p>
+        )}
+      </section>
+
+      {/* Top symptoms */}
+      <section className="chart-section">
+        <h2>Top Symptoms by Frequency</h2>
+        <p className="muted">
+          The most common symptoms across all cases. This informs UI design (surface common symptoms first) and helps
+          explain what the model “sees” most often.
+        </p>
+        <div style={{ width: "100%", height: 500 }}>
+          <ResponsiveContainer>
+            <BarChart
+              data={topSymptoms}
+              layout="vertical"
+              margin={{ left: 180, right: 16, top: 8, bottom: 8 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis type="category" dataKey="symptom" width={320} />
+              <Tooltip />
+              <Bar dataKey="count" fill="#5CA9FB" radius={[4,4,4,4]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </section>
 
+      {/* Takeaways */}
       <section className="note">
-        <h3>Takeaways</h3>
+        <h3>Key Takeaways</h3>
         <ul>
           <li>
-            Scores look high because the dataset is very clean and symptoms often uniquely map to a diagnosis.
-            For more realistic estimates, try holdout conditions, noise injection, and cross‑dataset testing.
+            High scores on clean, separable datasets don’t guarantee real‑world performance. Validate with tougher,
+            noisier inputs and cross‑dataset tests.
           </li>
           <li>
-            You can swap the overlap scorer for a TF.js softmax model without changing this page’s structure.
+            Class imbalance (dataset distribution) can bias results. Consider balanced splits or class‑weighted
+            loss for stronger models.
+          </li>
+          <li>
+            Common symptoms should be quick to select; rare ones must be searchable. Use the Top Symptoms chart to
+            guide your picker UX.
+          </li>
+          <li>
+            Next steps: swap the overlap baseline for a TF.js softmax, add severity/temporal weighting, and explore
+            robustness (drop/misspell symptoms) to measure degradation.
           </li>
         </ul>
       </section>
