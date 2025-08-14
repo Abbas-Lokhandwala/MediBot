@@ -181,7 +181,7 @@ export default function Home() {
         <span>•</span>
         <span>
           Built by{" "}
-          <a href="https://linktr.ee/abbaslokhandwala" target="_blank" rel="noreferrer">
+          <a href="https://github.com/Abbas-Lokhandwala" target="_blank" rel="noreferrer">
             Abbas Lokhandwala
           </a>
         </span>
